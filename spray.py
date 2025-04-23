@@ -10,8 +10,7 @@
 # modify it, or distribute modified versions without express permission.
 # ------------------------------------------------------------------------------
 
-# spray function test sans valve control
-
+# spray function test with valve control
 import time
 import math
 import pyb
@@ -20,19 +19,41 @@ import random
 # --- USER CONFIGURABLE PARAMETERS ---
 X_CENTER = 90        # X-axis center position (0-180 degrees)
 Z_CENTER = 90        # Z-axis center position (0-180 degrees)
-N_ITERATIONS = 3     # Number of outward + inward spiral cycles
+N_ITERATIONS = 5     # Number of outward + inward spiral cycles
 SPIRAL_RADIUS = 5    # Spiral radius (degrees), recommended 2 - 10
+JIGGLE_RANGE = 1.0   # Jiggle range in degrees
+TURNS = 3            # Number of spiral turns per cycle
+STEPS_PER_TURN = 72  # Smoothness of the spiral
+DELAY = 0.03         # Delay between steps (seconds)
 
-# --- PWM Setup for Servos ---
-# X-axis Servo on PB8 -> Timer 4, Channel 3
-servo_pin_x = pyb.Pin.board.PB8
-timer_x = pyb.Timer(4, freq=50)
+# --- Buzzer Setup on A0 (PA0) --- (INACTIVE)
+buzzer_pin = pyb.Pin(pyb.Pin.board.A0, pyb.Pin.OUT_PP)
+buzzer_pin.low()  # Ensure buzzer is OFF initially
+
+# --- PWM Setup for Servos (Updated to PA9 and PA10 using Timer 1) ---
+# X-axis Servo on PA10 -> Timer 1, Channel 3
+servo_pin_x = pyb.Pin.board.PA10
+timer_x = pyb.Timer(1, freq=50)
 ch_x = timer_x.channel(3, pyb.Timer.PWM, pin=servo_pin_x)
 
-# Z-axis Servo on PB9 -> Timer 4, Channel 4
-servo_pin_z = pyb.Pin.board.PB9
-timer_z = pyb.Timer(4, freq=50)
-ch_z = timer_z.channel(4, pyb.Timer.PWM, pin=servo_pin_z)
+# Z-axis Servo on PA9 -> Timer 1, Channel 2
+servo_pin_z = pyb.Pin.board.PA9
+timer_z = pyb.Timer(1, freq=50)
+ch_z = timer_z.channel(2, pyb.Timer.PWM, pin=servo_pin_z)
+
+# --- Valve Control Setup ---
+valve_pin = pyb.Pin(pyb.Pin.board.PG1, pyb.Pin.OUT_PP)
+valve_pin.low()  # Ensure valve is initially closed
+
+
+def buzzer_on():
+    buzzer_pin.high()
+    print("Buzzer ON (inactive)")
+
+def buzzer_off():
+    buzzer_pin.low()
+    print("Buzzer OFF (inactive)")
+
 
 # --- Servo Control Helper Functions ---
 def angle_to_us(angle):
@@ -50,8 +71,17 @@ def move_turret(x_angle, z_angle):
     move_servo(ch_z, z_angle)
     print(f"Moved turret to X: {x_angle:.2f}°, Z: {z_angle:.2f}°")
 
+# --- Valve Control Functions ---
+def open_valve():
+    valve_pin.high()
+    print("Valve OPENED")
+
+def close_valve():
+    valve_pin.low()
+    print("Valve CLOSED")
+
 # --- Spiral Pattern with Jiggle ---
-def spray_spiral(center_x, center_z, max_radius=5, turns=3, steps_per_turn=72, delay=0.03, inward=False, jiggle_range=1.0):
+def spray_spiral(center_x, center_z, max_radius, turns, steps_per_turn, delay, inward=False, jiggle_range=1.0):
     total_steps = turns * steps_per_turn
     radius_increment = max_radius / total_steps
 
@@ -79,9 +109,15 @@ def spray_spiral(center_x, center_z, max_radius=5, turns=3, steps_per_turn=72, d
         time.sleep(delay)
 
 # --- Main Spray Function ---
-def spray(center_x=90, center_z=90, iterations=2, max_radius=5, turns=3, steps_per_turn=72, delay=0.03, jiggle_range=1.0):
+def spray(center_x=X_CENTER, center_z=Z_CENTER, iterations=N_ITERATIONS, max_radius=SPIRAL_RADIUS,
+          turns=TURNS, steps_per_turn=STEPS_PER_TURN, delay=DELAY, jiggle_range=JIGGLE_RANGE):
+    """
+    Perform a jiggle spiral spray pattern using user-configurable parameters.
+    """
     move_turret(center_x, center_z)
     time.sleep(1)
+
+    open_valve()  # Start spraying
 
     for cycle in range(iterations):
         print(f"Cycle {cycle + 1} - OUTWARD Spiral")
@@ -90,9 +126,11 @@ def spray(center_x=90, center_z=90, iterations=2, max_radius=5, turns=3, steps_p
         print(f"Cycle {cycle + 1} - INWARD Spiral")
         spray_spiral(center_x, center_z, max_radius, turns, steps_per_turn, delay, inward=True, jiggle_range=jiggle_range)
 
+    close_valve()  # Stop spraying
+
     move_turret(center_x, center_z)
     print(f"Returned to center X: {center_x:.2f}°, Z: {center_z:.2f}°")
 
-# --- Execute with Top Parameters ---
+# --- Execute Using User Parameters ---
 if __name__ == "__main__":
-    spray(center_x=X_CENTER, center_z=Z_CENTER, iterations=N_ITERATIONS, max_radius=SPIRAL_RADIUS)
+    spray()  # Automatically uses the top-level parameters
