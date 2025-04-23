@@ -16,15 +16,16 @@ import time
 import pyb
 
 # --- PWM Setup ---
-# X-axis Servo on PB8 -> Timer 4, Channel 3
-servo_pin_x = pyb.Pin.board.PB8
-timer_x = pyb.Timer(4, freq=50)
+# --- PWM Setup for Servos (Updated to PA9 and PA10 using Timer 1) ---
+# X-axis Servo on PA10 -> Timer 1, Channel 3
+servo_pin_x = pyb.Pin.board.PA10
+timer_x = pyb.Timer(1, freq=50)
 ch_x = timer_x.channel(3, pyb.Timer.PWM, pin=servo_pin_x)
 
-# Z-axis Servo on PB9 -> Timer 4, Channel 4
-servo_pin_z = pyb.Pin.board.PB9
-timer_z = pyb.Timer(4, freq=50)
-ch_z = timer_z.channel(4, pyb.Timer.PWM, pin=servo_pin_z)
+# Z-axis Servo on PA9 -> Timer 1, Channel 2
+servo_pin_z = pyb.Pin.board.PA9
+timer_z = pyb.Timer(1, freq=50)
+ch_z = timer_z.channel(2, pyb.Timer.PWM, pin=servo_pin_z)
 
 # --- Helper: Standard 90° Pulse Width ---
 def set_servo_to_90(ch):
