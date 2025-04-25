@@ -1,0 +1,64 @@
+# ------------------------------------------------------------------------------
+# Doginator Project
+# Copyright (c) 2025 Joel Goldwein
+# All rights reserved.
+#
+# This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
+# To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/
+#
+# You may share this file with attribution, but you may not use it for commercial purposes,
+# modify it, or distribute modified versions without express permission.
+# ------------------------------------------------------------------------------
+
+import socket
+import network
+import time
+
+# Wi-Fi Connection (already verified)
+nic = network.WLAN(network.STA_IF)
+nic.active(True)
+nic.connect("SSID", "PASSWORD")
+
+while not nic.isconnected():
+    time.sleep(1)
+    print("Connecting...")
+
+print("Connected!", nic.ifconfig())
+
+# Start TCP Server (Telnet-like)
+addr = socket.getaddrinfo('0.0.0.0', 23)[0][-1]  # Telnet runs on port 23
+s = socket.socket()
+s.bind(addr)
+s.listen(1)
+
+print('Telnet-like server listening on:', addr)
+
+while True:
+    cl, addr = s.accept()
+    print('Client connected from', addr)
+    cl.send(b"Welcome to Doginator P-Blaster Control Center\r\n")
+    cl.send(b"Type 'spray <zone>' or 'stop'\r\n")
+    while True:
+        data = cl.recv(64)
+        if not data:
+            break
+        cmd = data.decode().strip()
+        print(f"Received: {cmd}")
+        if cmd.startswith('spray'):
+            try:
+                _, zone = cmd.split()
+                zone = int(zone)
+                cl.send(f"Spraying zone {zone}\r\n".encode())
+                # call spray(zone) here
+            except:
+                cl.send(b"Invalid command\r\n")
+        elif cmd == 'stop':
+            cl.send(b"Stopping spray\r\n")
+            # call stop_spray() here
+        elif cmd == 'exit':
+            cl.send(b"Goodbye\r\n")
+            break
+        else:
+            cl.send(b"Unknown command\r\n")
+    cl.close()
+    print("Client disconnected")
