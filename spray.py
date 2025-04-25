@@ -11,6 +11,7 @@
 # ------------------------------------------------------------------------------
 
 # spray function test with valve control
+
 import time
 import math
 import pyb
@@ -42,7 +43,7 @@ timer_z = pyb.Timer(1, freq=50)
 ch_z = timer_z.channel(2, pyb.Timer.PWM, pin=servo_pin_z)
 
 # --- Valve Control Setup ---
-valve_pin = pyb.Pin(pyb.Pin.board.PG1, pyb.Pin.OUT_PP)
+valve_pin = pyb.Pin(pyb.Pin.board.PB8, pyb.Pin.OUT_PP)
 valve_pin.low()  # Ensure valve is initially closed
 
 
