@@ -17,7 +17,7 @@ import time
 # Wi-Fi Connection (already verified)
 nic = network.WLAN(network.STA_IF)
 nic.active(True)
-nic.connect("SSID", "PASSWORD")
+nic.connect("ssid", "password")
 
 while not nic.isconnected():
     time.sleep(1)
@@ -26,7 +26,7 @@ while not nic.isconnected():
 print("Connected!", nic.ifconfig())
 
 # Start TCP Server (Telnet-like)
-addr = socket.getaddrinfo('0.0.0.0', 23)[0][-1]  # Telnet runs on port 23
+addr = socket.getaddrinfo('0.0.0.0', 23)[0][-1]  # Telnet port 23
 s = socket.socket()
 s.bind(addr)
 s.listen(1)
@@ -36,29 +36,39 @@ print('Telnet-like server listening on:', addr)
 while True:
     cl, addr = s.accept()
     print('Client connected from', addr)
-    cl.send(b"Welcome to Doginator P-Blaster Control Center\r\n")
-    cl.send(b"Type 'spray <zone>' or 'stop'\r\n")
+    cl.send(b"Welcome to Nicla Vision\r\n")
+    cl.send(b"Type 'spray <zone>', 'stop', or 'exit'\r\n")
     while True:
-        data = cl.recv(64)
-        if not data:
-            break
-        cmd = data.decode().strip()
-        print(f"Received: {cmd}")
-        if cmd.startswith('spray'):
+        try:
+            data = cl.recv(64)
+            if not data:
+                break
             try:
-                _, zone = cmd.split()
-                zone = int(zone)
-                cl.send(f"Spraying zone {zone}\r\n".encode())
-                # call spray(zone) here
-            except:
-                cl.send(b"Invalid command\r\n")
-        elif cmd == 'stop':
-            cl.send(b"Stopping spray\r\n")
-            # call stop_spray() here
-        elif cmd == 'exit':
-            cl.send(b"Goodbye\r\n")
+                cmd = data.decode('utf-8').strip()  # Use 'utf-8' with error handling
+            except UnicodeError:
+                cl.send(b"Unicode decode error. Try again.\r\n")
+                continue
+
+            print(f"Received: {cmd}")
+            if cmd.startswith('spray'):
+                try:
+                    _, zone = cmd.split()
+                    zone = int(zone)
+                    cl.send(f"Spraying zone {zone}\r\n".encode())
+                    # call spray(zone) here
+                except:
+                    cl.send(b"Invalid spray command. Use: spray <zone>\r\n")
+            elif cmd == 'stop':
+                cl.send(b"Stopping spray\r\n")
+                # call stop_spray() here
+            elif cmd == 'exit':
+                cl.send(b"Goodbye\r\n")
+                break
+            else:
+                cl.send(b"Unknown command\r\n")
+        except Exception as e:
+            cl.send(b"Error occurred.\r\n")
+            print(f"Error: {e}")
             break
-        else:
-            cl.send(b"Unknown command\r\n")
     cl.close()
     print("Client disconnected")
