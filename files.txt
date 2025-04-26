@@ -1,0 +1,11 @@
+/
+├── main.py
+├── boot.py
+├── doginator_main.py
+├── spray_zone.py
+├── wifi_connect.py
+├── config_loader.py
+├── dog_detector_localizer.py
+├── config.ini
+├── trained.tflite
+└── labels.txt
