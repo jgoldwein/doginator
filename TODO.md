@@ -16,3 +16,5 @@
 7. Tamper Alarm
 8. Improve specificity and sensitivity of dog/not dog process
 9. Use of VL53L1X-based motion detection and TOF calculation
+10. Button Controls
+11. BT control interface
