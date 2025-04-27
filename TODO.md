@@ -7,7 +7,7 @@
 # To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/
 # --------------------------------------------------------------------
 #
-#                 *****  TO DO *****
+#  *****************  TO DO *************************
 #   **** Opportunities for Improved Functionality ****
 1. Battery system (rechargable) to replace 12V Power Supply
 2. Improved calibration process
@@ -22,6 +22,6 @@
 11. Button Controls
 12. BT control interface
     
-**** Enhancement and Paradigm Expansion Opportunities  ****
+#  **** Enhancement and Paradigm Expansion Opportunities  ****
 1. Rabbit Control
 2. Controlled watering of specific garden and lawn regions 
